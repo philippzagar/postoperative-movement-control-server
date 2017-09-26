@@ -15,14 +15,12 @@ const argv = yargs
     .alias('h', 'help')
     .argv;
 
-let logging = false;
+let logArgument = false;
 if(argv.l) {
-    logging = true;
+    logArgument = true;
 }
 
-if(logging) {
-    log.logConsole("Hallo dies ist ein Test");
-}
+log.logFile("Test", logArgument);
 
 
 /*app.get('/', (req, res) => {
