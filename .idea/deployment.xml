@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="RPi School">
+  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="RPi Fernzugriff">
     <serverData>
+      <paths name="RPi Fernzugriff">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/Project" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="RPi Home">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/Project" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="RPi School">
         <serverdata>
           <mappings>

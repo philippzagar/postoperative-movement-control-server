@@ -16,8 +16,8 @@ const argv = yargs
     .alias('h', 'help')
     .argv;
 
-let logArgument = false;
-if(argv.l) logArgument = true;
+let logArgument;
+argv.l ? logArgument = true : logArgument = false;
 
 let mysql      = require('mysql');
 let con = mysql.createConnection({
@@ -41,7 +41,7 @@ con.connect(function(err) {
     });
 });
 
-app.post()
+log.logDB("This is a Test", logArgument);
 
 /*app.get('/', (req, res) => {
     res.send("Hallo");

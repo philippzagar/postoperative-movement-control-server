@@ -10,6 +10,22 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="39d745f1-3568-4e7c-88d5-fff11aaf5ef5" name="RPi Home" url="http://192.168.178.65">
+        <fileTransfer host="192.168.178.65" port="22" rootFolder="/home/pi" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="ff5c91b4-3a60-4084-85a9-aa82b2207604" name="RPi Fernzugriff" url="http://zagar.spdns.org">
+        <fileTransfer host="zagar.spdns.org" port="22" rootFolder="/home/pi" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
