@@ -1,8 +1,9 @@
 const yargs = require('yargs');
 const express = require('express');
-const log = require('./modules/log');
 const date = require('./modules/date');
+const sql = require('./modules/sql');
 //let app = express();
+const Log = require('./modules/log').Log;
 
 const argv = yargs
     .options({
@@ -19,29 +20,13 @@ const argv = yargs
 let logArgument;
 argv.l ? logArgument = true : logArgument = false;
 
-let mysql      = require('mysql');
-let con = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : 'raspberry',
-    database : 'dipl'
-});
+let log = new Log(logArgument);
 
-con.connect(function(err) {
-    if (err) throw err;
-    log.logConsole("Connected!", logArgument);
-    let sql = `INSERT INTO gyro (time, sensor) VALUES ('${date.getDateTime()}', 1)`;
-    con.query(sql, function (err, result) {
-        if (err) {
-            log.logConsole("Error happend when processing query");
-            throw err;
-        }
-        log.logConsole("1 record inserted", logArgument);
-        con.end();
-    });
-});
+sql.insertQuery(`INSERT INTO log (time, data) VALUES ('${date.getDateTime()}', 'Test for the sql function 2')`);
 
-log.logDB("This is a Test", logArgument);
+log.Console("test", logArgument);
+
+//log.logDB("This is a Test", logArgument);
 
 /*app.get('/', (req, res) => {
     res.send("Hallo");

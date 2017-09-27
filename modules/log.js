@@ -1,48 +1,33 @@
 const fs = require('fs');
 const date = require('./date');
-let mysql = require('mysql');
+const sql = require('./sql');
 
-let logConsole = (data, logArgument) => {
-    if(logArgument) {
-        console.log(`${date.getDateTime()}   ${data}`);
+class Log {
+    constructor(logArgument) {
+        this.logArgument = logArgument;
     }
-};
 
-let logFile = (data, logArgument) => {
-    if(logArgument) {
-        fs.appendFile('log.txt', `${date.getDateTime()}   ${data}\r\n`, (err) => {
-            if (err) throw err;
-        });
+    Console(data) {
+        if(this.logArgument) {
+            console.log(`${date.getDateTime()}   ${data}`);
+        }
     }
-};
 
-let logDB = (data, logArgument) => {
-    if(logArgument) {
-        let con = mysql.createConnection({
-            host     : 'localhost',
-            user     : 'root',
-            password : 'raspberry',
-            database : 'dipl'
-        });
-
-        con.connect(function(err) {
-            if (err) throw err;
-            logConsole("Connected!", logArgument);
-            let sql = `INSERT INTO log (time, data) VALUES ('${date.getDateTime()}', '${data}')`;
-            con.query(sql, function (err, result) {
-                if (err) {
-                    logConsole("Error happend when processing query");
-                    throw err;
-                }
-                logConsole("1 record inserted", logArgument);
-                con.end();
+    File(data) {
+        if(this.logArgument) {
+            fs.appendFile('log.txt', `${date.getDateTime()}   ${data}\r\n`, (err) => {
+                if (err) throw err;
             });
-        });
+        }
     }
-};
+
+    DB(data) {
+        if(this.logArgument) {
+            sql.insertQuery(`INSERT INTO log (time, data) VALUES ('${date.getDateTime()}', '${data}')`);
+        }
+    }
+}
 
 module.exports = {
-    logConsole,
-    logFile,
-    logDB
+    Log
 };
