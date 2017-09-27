@@ -1,0 +1,22 @@
+{
+  "name": "positionsmessung",
+  "version": "1.0.0",
+  "description": "Get the position data from android app, store it in the DB, calculate movements and provide the data for web frontend",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://Philipp1999@bitbucket.org/Philipp1999/diplomarbeit.git"
+  },
+  "author": "Philipp Zagar",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/Philipp1999/diplomarbeit#readme",
+  "dependencies": {
+    "express": "^4.15.5",
+    "mongodb": "^2.2.31",
+    "mysql": "^2.14.1",
+    "yargs": "^9.0.1"
+  }
+}
