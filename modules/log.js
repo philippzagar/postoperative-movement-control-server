@@ -13,6 +13,13 @@ class Log {
         }
     }
 
+    ConsoleJSON(data) {
+        if(this.logArgument) {
+            console.log(`${date.getDateTime()}`);
+            console.log(JSON.stringify(data, undefined, 2));
+        }
+    }
+
     File(data) {
         if(this.logArgument) {
             fs.appendFile('log.txt', `${date.getDateTime()}   ${data}\r\n`, (err) => {
