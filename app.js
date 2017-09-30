@@ -47,6 +47,14 @@ app.post('/members', (req, res) => {
     });
 });
 
+app.get('/members', (req, res) => {
+   Member.find().then((members) => {
+       res.send({members});
+   }, (err) => {
+       res.status(400).send(err);
+   })
+});
+
 app.listen(3000, () => {
     log.Console("Server started!");
 });

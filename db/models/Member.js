@@ -15,7 +15,7 @@ let Member = mongoose.model('Member', {
     },
     under_18: {
         type: Boolean,
-        required: true
+        default: true
     },
     birth_year: {
         type: Number,
