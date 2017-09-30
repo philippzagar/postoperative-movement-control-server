@@ -4,7 +4,8 @@
   "description": "Get the position data from android app, store it in the DB, calculate movements and provide the data for web frontend",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha db/**/*.test.js",
+    "test-watch": "nodemon --exec 'npm test'"
   },
   "repository": {
     "type": "git",
@@ -20,5 +21,11 @@
     "mongoose": "^4.11.13",
     "mysql": "^2.14.1",
     "yargs": "^9.0.1"
+  },
+  "devDependencies": {
+    "expect": "^21.2.1",
+    "mocha": "^3.5.3",
+    "nodemon": "^1.12.1",
+    "supertest": "^3.0.0"
   }
 }

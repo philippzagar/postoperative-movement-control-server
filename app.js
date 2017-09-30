@@ -26,7 +26,7 @@ let log = new Log(logArgument);
 let app = express();
 
 let {mongoose} = require('./db/mongoose');
-let {Member} = require('./db/models/member');
+let {Member} = require('./db/models/Member');
 
 app.use(bodyParser.json());
 
@@ -36,7 +36,8 @@ app.post('/members', (req, res) => {
    let member = new Member({
        first_name: req.body.first_name,
        last_name: req.body.last_name,
-       under_18: req.body.under_18
+       under_18: req.body.under_18,
+       birth_year: req.body.birth_year
    });
 
    member.save().then((doc) => {
@@ -49,3 +50,5 @@ app.post('/members', (req, res) => {
 app.listen(3000, () => {
     log.Console("Server started!");
 });
+
+module.exports = {app};
