@@ -27,6 +27,7 @@ let app = express();
 
 let {mongoose} = require('./db/mongoose');
 let {Member} = require('./db/models/Member');
+let {ObjectID} = require('mongodb');
 
 app.use(bodyParser.json());
 
@@ -53,6 +54,22 @@ app.get('/members', (req, res) => {
    }, (err) => {
        res.status(400).send(err);
    })
+});
+
+app.get('/members/:id', (req, res) => {
+    let id = req.params.id;
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Member.findById(id).then((member) => {
+        if (!member) {
+            return res.status(404).send();
+        }
+        res.send({member});
+    }).catch((e) => {
+        res.status(400).send();
+    })
 });
 
 app.listen(3000, () => {

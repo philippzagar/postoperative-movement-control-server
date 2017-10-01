@@ -1,21 +1,25 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../../app');
 const {Member} = require('./../models/Member');
 
 const dummyMembers = [
     {
+        _id: new ObjectID(),
         first_name: "Philipp",
         last_name: "Zagar",
         under_18: false,
         birth_year: 1999
     }, {
+        _id: new ObjectID(),
         first_name: "Julian",
         last_name: "Zagar",
         under_18: true,
         birth_year: 2000
     }, {
+        _id: new ObjectID(),
         first_name: "Petra",
         last_name: "Zagar",
         under_18: false,
@@ -92,6 +96,28 @@ describe('GET /members', () => {
             .get('/members')
             .expect(200)
             .expect((res) => expect(res.body.members.length).toBe(3))
+            .end(done);
+    });
+});
+
+describe('GET /members/:id', () => {
+    it('should get one member', (done) => {
+        request(app)
+            .get(`/members/${dummyMembers[0]._id.toHexString()}`)
+            .expect(200)
+            .expect((res) => expect(res.body.member.first_name).toBe(dummyMembers[0].first_name))
+            .end(done);
+    });
+    it('should return 404 if member not found', (done) => {
+        request(app)
+            .get(`/members/${new ObjectID().toHexString()}`)
+            .expect(404)
+            .end(done);
+    });
+    it('should return 404 if member not found', (done) => {
+        request(app)
+            .get('/members/123')
+            .expect(404)
             .end(done);
     });
 });
