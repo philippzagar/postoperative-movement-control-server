@@ -1,6 +1,7 @@
 const yargs = require('yargs');
 const express = require('express');
 const bodyParser = require('body-parser');
+const _ = require('lodash');
 
 const date = require('./modules/date');
 const sql = require('./modules/sql');
@@ -70,6 +71,60 @@ app.get('/members/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send();
     })
+});
+
+app.delete('/members/:id', (req, res) => {
+   let id = req.params.id;
+   if(!ObjectID.isValid(id)) {
+       return res.status(404).send();
+   }
+
+   Member.findByIdAndRemove(id).then((member) => {
+       if(!member) {
+           return res.status(404).send();
+       }
+
+       res.send({member});
+   }).catch((err) => {
+       res.status(400).send();
+   })
+});
+
+app.patch('/members/:id', (req, res) => {
+    let id = req.params.id;
+    let body = _.pick(req.body, ['birth_year']);
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    if(_.isInteger(body.birth_year)) {
+        let birthDate = new Date();
+
+        birthDate.setDate(1);
+        birthDate.setMonth(0);
+        birthDate.setFullYear(body.birth_year);
+
+        let actualDate = new Date();
+        actualDate.setFullYear(actualDate.getFullYear() - 18);
+
+        birthDate <= actualDate ? body.under_18 = false : body.under_18 = true;
+
+    } else {
+        body.under_18 = true;
+    }
+
+    Member.findByIdAndUpdate(id, {$set: body}, {new: true}).then((member) => {
+        if(!member) {
+            return res.status(404).send();
+        }
+
+        res.send({member});
+    }).catch((e) => {
+        res.status(400).send();
+    })
+
+
 });
 
 app.listen(3000, () => {

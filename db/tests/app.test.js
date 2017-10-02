@@ -121,3 +121,43 @@ describe('GET /members/:id', () => {
             .end(done);
     });
 });
+
+describe('DELETE /todos/:id', () => {
+    it('should remove a member', (done) => {
+        let hexId = dummyMembers[1]._id.toHexString();
+
+        request(app)
+            .delete(`/members/${hexId}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.member._id).toBe(hexId);
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                Member.findById(hexId).then((member) => {
+                    if(!member) {
+                        done();
+                    }
+                }).catch((e) => done(e));
+            });
+    });
+
+    it('should return 404 if member not found', (done) => {
+        let hexId = new ObjectID().toHexString();
+
+        request(app)
+            .delete(`/members/${hexId}`)
+            .expect(404)
+            .end(done);
+    });
+
+    it('should return 404 if object id is invalid', (done) => {
+        request(app)
+            .delete('/members/123abc')
+            .expect(404)
+            .end(done);
+    });
+});
