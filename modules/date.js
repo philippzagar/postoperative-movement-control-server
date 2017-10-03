@@ -41,8 +41,24 @@ let getTime = () => {
     return hour + ":" + min + ":" + sec;
 };
 
+let getMilliTime = () => {
+    let date = new Date();
+
+    let hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+    let min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+    let sec  = date.getSeconds();
+    sec = (sec < 10 ? "0" : "") + sec;
+    let milli = date.getMilliseconds();
+    milli = (milli < 10 ? "0" : "") + milli;
+
+    return hour + ":" + min + ":" + sec + ":" + milli;
+};
+
 module.exports = {
     getDateTime,
     getDate,
-    getTime
+    getTime,
+    getMilliTime
 };

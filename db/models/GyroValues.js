@@ -15,8 +15,8 @@ let GyroValues = mongoose.model('GyroValues', {
             max: 4
         },
         date: {
-            type: String,
-            default: date.getDateTime()
+            type: Date,
+            default: Date.now
         }
     },
 

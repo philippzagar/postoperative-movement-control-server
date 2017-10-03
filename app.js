@@ -30,7 +30,8 @@ let {mongoose} = require('./db/mongoose');
 let {Member} = require('./db/models/Member');
 let {ObjectID} = require('mongodb');
 
-app.use(bodyParser.json());
+// Parse body to JSON - Limit set to 50MB - otherwise it throws exception
+app.use(bodyParser.json({limit: '50mb'}));
 
 app.post('/members', (req, res) => {
    log.ConsoleJSON(req.body);
@@ -125,10 +126,12 @@ app.patch('/members/:id', (req, res) => {
     })
 });
 
-let {GyroValues} = require('./db/models/GyroValues');
+const {GyroValues} = require('./db/models/GyroValues');
 
 app.post('/gyroValue', (req, res) => {
     log.ConsoleJSON(req.body);
+
+    log.Console("Schedle");
 
     let gyroValue = new GyroValues(req.body);
 
@@ -147,6 +150,57 @@ app.post('/gyroValues', (req, res) => {
 
     let gyroValues = req.body;
 
+    // Method 1 - Insert with function insertMany() from Mongoose
+    /*
+    log.Console(date.getMilliTime());
+
+    GyroValues.insertMany(gyroValues).then((values) => {
+        log.Console(date.getMilliTime());
+        res.send({info: `Inserted ${values.length} Documents!`, values: values});
+
+    }, (err) => {
+        return res.status(400).send(err);
+    }).catch((err) => {
+        return res.status(400).send(err);
+    });
+    */
+
+    // Method 2 - Insert with native MongoDB Library
+    const {MongoClient} = require('mongodb');
+
+    const user = "MyAppUser";
+    const pw = "12345";
+    const authMechanism = "SCRAM-SHA-1";
+    const authSource = "MyApp";
+
+    // Connection URL
+    const url = `mongodb://${user}:${pw}@localhost:27017/MyApp?authMechanism=${authMechanism}`;
+    // Use connect method to connect to the Server
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            log.Console("Connection to DB failed!");
+            return;
+        }
+
+        log.Console("Connected correctly to server");
+
+        log.Console(date.getMilliTime());
+        db.collection("gyroTest").insertMany(gyroValues, (err, result) => {
+            if (err) {
+                log.Console(err);
+                return log.Console("Couldn't insert the Object!");
+            }
+
+            log.Console(date.getMilliTime());
+            res.send(result);
+            db.close();
+        });
+
+
+    });
+
+    // Method 3 - Inserting with .save() from Mongoose with for loop
+    /*
     let i = 0;
 
     for(i; i < gyroValues.length; i++) {
@@ -158,14 +212,12 @@ app.post('/gyroValues', (req, res) => {
             return res.status(400).send(err);
         });
     }
+    */
 
-    res.status(200).send({result: `Inserted ${i} Values to DB!`});
+    //res.status(200).send({result: `Inserted ${i} Values to DB!`, values:gyroValues});
 });
 
 app.get('/gyroValues', (req, res) => {
-
-    log.Console("Schedle connected!");
-
     GyroValues.find().then((gyroValues) => {
         res.send({gyroValues});
     }, (err) => {
