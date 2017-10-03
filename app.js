@@ -195,8 +195,6 @@ app.post('/gyroValues', (req, res) => {
             res.send(result);
             db.close();
         });
-
-
     });
 
     // Method 3 - Inserting with .save() from Mongoose with for loop

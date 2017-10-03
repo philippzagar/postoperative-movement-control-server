@@ -122,7 +122,7 @@ describe('GET /members/:id', () => {
     });
 });
 
-describe('DELETE /todos/:id', () => {
+describe('DELETE /members/:id', () => {
     it('should remove a member', (done) => {
         let hexId = dummyMembers[1]._id.toHexString();
 
@@ -159,5 +159,57 @@ describe('DELETE /todos/:id', () => {
             .delete('/members/123abc')
             .expect(404)
             .end(done);
+    });
+});
+
+describe('PATCH /members/:id', () => {
+   it('should set under_18 to true if age is under 18', (done) => {
+       let hexId = dummyMembers[0]._id.toHexString();
+
+       let object = {
+         birth_year: 2000
+       };
+
+       request(app)
+           .patch(`/members/${hexId}`)
+           .send(object)
+           .expect(200)
+           .expect((res) => expect(res.body.member.under_18).toBe(!dummyMembers[0].under_18))
+           .end((err, res) => {
+               if (err) {
+                   return done(err);
+               }
+
+               Member.findById(hexId).then((member) => {
+                   if(member.under_18) {
+                       done();
+                   }
+               }).catch((e) => done(e));
+       });
+   });
+
+    it('should set under_18 to false if age is over 18', (done) => {
+        let hexId = dummyMembers[1]._id.toHexString();
+
+        let object = {
+            birth_year: 1999
+        };
+
+        request(app)
+            .patch(`/members/${hexId}`)
+            .send(object)
+            .expect(200)
+            .expect((res) => expect(res.body.member.under_18).toBe(!dummyMembers[1].under_18))
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                Member.findById(hexId).then((member) => {
+                    if(!member.under_18) {
+                        done();
+                    }
+                }).catch((e) => done(e));
+            });
     });
 });
