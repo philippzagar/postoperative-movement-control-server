@@ -123,8 +123,144 @@ app.patch('/members/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send();
     })
+});
 
+let {GyroValues} = require('./db/models/GyroValues');
 
+app.post('/gyroValue', (req, res) => {
+    log.ConsoleJSON(req.body);
+
+    let gyroValue = new GyroValues(req.body);
+
+    gyroValue.save().then((value) => {
+        res.send(value);
+    }, (err) => {
+        res.status(400).send(err);
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+});
+
+app.post('/gyroValues', (req, res) => {
+    // Print out the JSON Array
+    //log.ConsoleJSON(req.body);
+
+    let gyroValues = req.body;
+
+    let i = 0;
+
+    for(i; i < gyroValues.length; i++) {
+        new GyroValues(gyroValues[i]).save().then((value) => {
+            //res.send(value);
+        }, (err) => {
+            return res.status(400).send(err);
+        }).catch((err) => {
+            return res.status(400).send(err);
+        });
+    }
+
+    res.status(200).send({result: `Inserted ${i} Values to DB!`});
+
+    /*
+    let gyroValue = new GyroValues ({
+        properties: {
+            description: req.body.properties.description,
+            gyroID: req.body.properties.gyroID,
+        },
+        values: {
+            pitch: req.body.values.pitch,
+            roll: req.body.values.roll,
+            yaw: req.body.values.yaw
+        },
+        rawValues: {
+            gyroX: req.body.rawValues.gyroX,
+            gyroY: req.body.rawValues.gyroY,
+            gyroZ: req.body.rawValues.gyroZ,
+            accX: req.body.rawValues.accX,
+            accY: req.body.rawValues.accY,
+            accZ: req.body.rawValues.accZ,
+        }
+    });
+
+    if(req.body.properties.date) {
+        gyroValue.properties.date = req.body.properties.date;
+    }
+
+    gyroValue.save().then((value) => {
+        res.send(value);
+    }, (err) => {
+        res.status(400).send(err);
+    });
+    */
+});
+
+app.get('/gyroValues', (req, res) => {
+
+    log.Console("Schedle connected!");
+
+    GyroValues.find().then((gyroValues) => {
+        res.send({gyroValues});
+    }, (err) => {
+        res.status(400).send(err);
+    })
+});
+
+app.get('/gyroValue/:id', (req, res) => {
+    let id = req.params.id;
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    GyroValues.findById(id).then((gyroValue) => {
+        if (!gyroValue) {
+            return res.status(404).send();
+        }
+        res.send({gyroValue});
+    }).catch((e) => {
+        res.status(400).send();
+    })
+});
+
+app.delete('/gyroValue/:id', (req, res) => {
+    let id = req.params.id;
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    GyroValues.findByIdAndRemove(id).then((gyroValue) => {
+        if(!gyroValue) {
+            return res.status(404).send();
+        }
+
+        res.send({gyroValue});
+    }).catch((err) => {
+        res.status(400).send();
+    })
+});
+
+app.patch('/gyroValue/:id', (req, res) => {
+    let id = req.params.id;
+    let body = _.pick(req.body, ['values']);
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    log.ConsoleJSON(body);
+
+    if(_.isNumber(body.values.pitch) && _.isNumber(body.values.roll) && _.isNumber(body.values.yaw) && body) {
+        GyroValues.findByIdAndUpdate(id, {$set: body}, {new: true}).then((gyroValue) => {
+            if(!gyroValue) {
+                return res.status(404).send();
+            }
+
+            res.send({gyroValue});
+        }).catch((e) => {
+            res.status(400).send();
+        })
+    } else {
+        res.status(400).send({err: "Invalid values!"});
+    }
 });
 
 app.listen(3000, () => {
