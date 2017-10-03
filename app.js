@@ -160,38 +160,6 @@ app.post('/gyroValues', (req, res) => {
     }
 
     res.status(200).send({result: `Inserted ${i} Values to DB!`});
-
-    /*
-    let gyroValue = new GyroValues ({
-        properties: {
-            description: req.body.properties.description,
-            gyroID: req.body.properties.gyroID,
-        },
-        values: {
-            pitch: req.body.values.pitch,
-            roll: req.body.values.roll,
-            yaw: req.body.values.yaw
-        },
-        rawValues: {
-            gyroX: req.body.rawValues.gyroX,
-            gyroY: req.body.rawValues.gyroY,
-            gyroZ: req.body.rawValues.gyroZ,
-            accX: req.body.rawValues.accX,
-            accY: req.body.rawValues.accY,
-            accZ: req.body.rawValues.accZ,
-        }
-    });
-
-    if(req.body.properties.date) {
-        gyroValue.properties.date = req.body.properties.date;
-    }
-
-    gyroValue.save().then((value) => {
-        res.send(value);
-    }, (err) => {
-        res.status(400).send(err);
-    });
-    */
 });
 
 app.get('/gyroValues', (req, res) => {
