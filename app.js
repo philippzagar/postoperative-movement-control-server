@@ -8,9 +8,11 @@ const   yargs = require('yargs'),
 const   https = require('https');
         fs = require('fs');
 
+// Constants
+const   C = require('./constants');
+
 // Self Written Modules
-const   consts = require('./constants'),
-        date = require('./modules/date'),
+const   date = require('./modules/date'),
         {Log} = require('./modules/log');
 
 // Command line arguments parser
@@ -300,15 +302,17 @@ app.get('/', (req, res) => {
     res.send("Hello World!");
 });
 
+// Webserver Binding
+app.listen(C.PORT, () => {
+    log.Console(`Server started on Port ${C.PORT}!`);
+});
+
+// SSL binding
 https.createServer({
     key: fs.readFileSync('./certificate/key.pem'),
     cert: fs.readFileSync('./certificate/cert.pem')
-}, app).listen(443, () => {
-    console.log('Server started on Port 443');
-});
-
-app.listen(80, () => {
-    log.Console("Server started!");
+}, app).listen(C.SSL_PORT, () => {
+    log.Console(`SSL Server started on Port ${C.SSL_PORT}!`);
 });
 
 module.exports = {app};
