@@ -1,12 +1,15 @@
+// npm Packages
 const yargs = require('yargs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
 
+// Self Written Modules
+const consts = require('./constants');
 const date = require('./modules/date');
-const sql = require('./modules/sql');
 const {Log} = require('./modules/log');
 
+// Command line arguments parser
 const argv = yargs
     .options({
         l: {
@@ -19,16 +22,18 @@ const argv = yargs
     .alias('h', 'help')
     .argv;
 
-let logArgument;
-argv.l ? logArgument = true : logArgument = false;
+// Global Logging Object
+global.log = new Log(argv.l ? logArgument = true : logArgument = false);
 
-let log = new Log(logArgument);
+// MongoDB Modules
+const {MongoClient, ObjectID} = require('mongodb');
+const {mongoose} = require('./db/mongoose');
+
+// Mongoose Modules
+const {Member} = require('./db/models/Member');
+const {GyroValues} = require('./db/models/GyroValues');
 
 let app = express();
-
-let {mongoose} = require('./db/mongoose');
-let {Member} = require('./db/models/Member');
-let {ObjectID} = require('mongodb');
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
@@ -126,12 +131,8 @@ app.patch('/members/:id', (req, res) => {
     })
 });
 
-const {GyroValues} = require('./db/models/GyroValues');
-
 app.post('/gyroValue', (req, res) => {
     log.ConsoleJSON(req.body);
-
-    log.Console("Schedle");
 
     let gyroValue = new GyroValues(req.body);
 
@@ -150,8 +151,8 @@ app.post('/gyroValues', (req, res) => {
 
     let gyroValues = req.body;
 
-    // Method 1 - Insert with function insertMany() from Mongoose
-    /*
+    //Method 1 - Insert with function insertMany() from Mongoose
+
     log.Console(date.getMilliTime());
 
     GyroValues.insertMany(gyroValues).then((values) => {
@@ -163,13 +164,25 @@ app.post('/gyroValues', (req, res) => {
     }).catch((err) => {
         return res.status(400).send(err);
     });
-    */
 
-    // Method 2 - Insert with native MongoDB Library
+
+
+    /* Method 2 - Insert with native MongoDB Library
     const {MongoClient} = require('mongodb');
 
-    const user = "MyAppUser";
-    const pw = "12345";
+    let user = "";
+    let pw = "";
+
+    if(htl_db) {
+        user = "MyUser";
+        pw = "User123";
+        log.Console("HTL PC DB is being used");
+    } else {
+        user = "MyAppUser";
+        pw = "12345";
+        log.Console("RPi DB is being used");
+    }
+
     const authMechanism = "SCRAM-SHA-1";
     const authSource = "MyApp";
 
@@ -196,9 +209,9 @@ app.post('/gyroValues', (req, res) => {
             db.close();
         });
     });
-
-    // Method 3 - Inserting with .save() from Mongoose with for loop
     /*
+
+    /* Method 3 - Inserting with .save() from Mongoose with for loop
     let i = 0;
 
     for(i; i < gyroValues.length; i++) {
@@ -210,9 +223,9 @@ app.post('/gyroValues', (req, res) => {
             return res.status(400).send(err);
         });
     }
-    */
 
-    //res.status(200).send({result: `Inserted ${i} Values to DB!`, values:gyroValues});
+    res.status(200).send({result: `Inserted ${i} Values to DB!`, values:gyroValues});
+    */
 });
 
 app.get('/gyroValues', (req, res) => {

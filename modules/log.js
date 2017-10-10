@@ -1,6 +1,6 @@
 const fs = require('fs');
 const date = require('./date');
-const sql = require('./sql');
+const {Logs} = require('./../db/models/Logs')
 
 class Log {
     constructor(logArgument) {
@@ -30,7 +30,15 @@ class Log {
 
     DB(data) {
         if(this.logArgument) {
-            sql.insertQuery(`INSERT INTO log (time, data) VALUES ('${date.getDateTime()}', '${data}')`);
+            let log = new Logs({data: data});
+
+            log.save().then((value) => {
+
+            }, (err) => {
+                console.log(`${date.getDateTime()}   ${err}`);
+            }).catch((err) => {
+                console.log(`${date.getDateTime()}   ${err}`);
+            });
         }
     }
 }

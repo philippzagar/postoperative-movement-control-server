@@ -26,6 +26,14 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="567b1143-7bd4-42e4-b2bb-c594d679bfe8" name="HTL PC" url="http://10.7.253.21">
+        <fileTransfer host="10.7.253.21" port="22" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

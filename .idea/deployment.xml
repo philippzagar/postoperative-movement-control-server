@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="RPi Fernzugriff" exclude=".svn;.cvs;.idea;.DS_Store;.git;.hg;node_modules">
+  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="HTL PC" exclude=".svn;.cvs;.idea;.DS_Store;.git;.hg;node_modules">
     <serverData>
+      <paths name="HTL PC">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/robert/Project/node" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="RPi Fernzugriff">
         <serverdata>
           <mappings>
