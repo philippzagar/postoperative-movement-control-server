@@ -1,13 +1,17 @@
 // npm Packages
-const yargs = require('yargs');
-const express = require('express');
-const bodyParser = require('body-parser');
-const _ = require('lodash');
+const   yargs = require('yargs'),
+        express = require('express'),
+        bodyParser = require('body-parser'),
+        _ = require('lodash');
+
+// System Packages
+const   https = require('https');
+        fs = require('fs');
 
 // Self Written Modules
-const consts = require('./constants');
-const date = require('./modules/date');
-const {Log} = require('./modules/log');
+const   consts = require('./constants'),
+        date = require('./modules/date'),
+        {Log} = require('./modules/log');
 
 // Command line arguments parser
 const argv = yargs
@@ -26,12 +30,12 @@ const argv = yargs
 global.log = new Log(argv.l ? logArgument = true : logArgument = false);
 
 // MongoDB Modules
-const {MongoClient, ObjectID} = require('mongodb');
-const {mongoose} = require('./db/mongoose');
+const   {MongoClient, ObjectID} = require('mongodb'),
+        {mongoose} = require('./db/mongoose');
 
 // Mongoose Modules
-const {Member} = require('./db/models/Member');
-const {GyroValues} = require('./db/models/GyroValues');
+const   {Member} = require('./db/models/Member'),
+        {GyroValues} = require('./db/models/GyroValues');
 
 let app = express();
 
@@ -165,8 +169,6 @@ app.post('/gyroValues', (req, res) => {
         return res.status(400).send(err);
     });
 
-
-
     /* Method 2 - Insert with native MongoDB Library
     const {MongoClient} = require('mongodb');
 
@@ -294,7 +296,18 @@ app.patch('/gyroValue/:id', (req, res) => {
     }
 });
 
-app.listen(3000, () => {
+app.get('/', (req, res) => {
+    res.send("Hello World!");
+});
+
+https.createServer({
+    key: fs.readFileSync('./certificate/key.pem'),
+    cert: fs.readFileSync('./certificate/cert.pem')
+}, app).listen(443, () => {
+    console.log('Server started on Port 443');
+});
+
+app.listen(80, () => {
     log.Console("Server started!");
 });
 
