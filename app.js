@@ -1,36 +1,23 @@
 // npm Packages
-const   yargs = require('yargs'),
-        express = require('express'),
+const   express = require('express'),
         bodyParser = require('body-parser'),
-        _ = require('lodash');
+        _ = require('lodash'),
+        favicon = require('serve-favicon');
 
 // System Packages
-const   http = require('http')
-        https = require('https');
+const   http = require('http'),
+        https = require('https'),
         fs = require('fs');
 
 // Constants
 const   C = require('./constants');
 
+// Command Line Arguments - Set global log object
+const   log = require('./cmdarguments');
+global.log = log;
+
 // Self Written Modules
-const   date = require('./modules/date'),
-        {Log} = require('./modules/log');
-
-// Command line arguments parser
-const argv = yargs
-    .options({
-        l: {
-            demand: false,
-            alias: 'log',
-            describe: 'Log everything in the commandline'
-        }
-    })
-    .help()
-    .alias('h', 'help')
-    .argv;
-
-// Global Logging Object
-global.log = new Log(argv.l ? logArgument = true : logArgument = false);
+const   date = require('./modules/date');
 
 // MongoDB Modules
 const   {MongoClient, ObjectID} = require('mongodb'),
@@ -44,6 +31,12 @@ let app = express();
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
+// Set Favicon
+app.use(favicon(__dirname + '/images/favicon.ico'));
+
+app.get('/', (req, res) => {
+    res.send("Hello World!");
+});
 
 app.post('/members', (req, res) => {
    log.ConsoleJSON(req.body);
@@ -297,10 +290,6 @@ app.patch('/gyroValue/:id', (req, res) => {
     } else {
         res.status(400).send({err: "Invalid values!"});
     }
-});
-
-app.get('/', (req, res) => {
-    res.send("Hello World!");
 });
 
 // Automatic redirecting to SSL

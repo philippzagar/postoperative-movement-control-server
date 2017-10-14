@@ -21,6 +21,7 @@
     "mongodb": "^2.2.31",
     "mongoose": "^4.11.13",
     "mysql": "^2.14.1",
+    "serve-favicon": "^2.4.5",
     "yargs": "^9.0.1"
   },
   "devDependencies": {
