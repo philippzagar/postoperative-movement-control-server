@@ -5,7 +5,8 @@ const   yargs = require('yargs'),
         _ = require('lodash');
 
 // System Packages
-const   https = require('https');
+const   http = require('http')
+        https = require('https');
         fs = require('fs');
 
 // Constants
@@ -302,15 +303,17 @@ app.get('/', (req, res) => {
     res.send("Hello World!");
 });
 
-// Webserver Binding
-app.listen(C.PORT, () => {
-    log.Console(`Server started on Port ${C.PORT}!`);
-});
+// Automatic redirecting to SSL
+http.createServer((req, res) => {
+    res.writeHead(301, {"Location": "https://" + req.headers['host'] + req.url});
+    res.end();
+}).listen(C.PORT);
 
-// SSL binding
+// HTTPS Server binding
 https.createServer({
-    key: fs.readFileSync('./certificate/key.pem'),
-    cert: fs.readFileSync('./certificate/cert.pem')
+    key: fs.readFileSync('./certs/privkey.pem'),
+    cert: fs.readFileSync('./certs/fullchain.pem'),
+    ca: fs.readFileSync('./certs/chain.pem')
 }, app).listen(C.SSL_PORT, () => {
     log.Console(`SSL Server started on Port ${C.SSL_PORT}!`);
 });

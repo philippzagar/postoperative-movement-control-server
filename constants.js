@@ -21,8 +21,8 @@ if(USING_HTL_DB) {
     DB_PW = "12345";
     DB_AuthMechanism = "SCRAM-SHA-1";
     DB_AuthSource = "MyApp";
-    PORT = 3000;
-    SSL_PORT = 2999;
+    PORT = 80;
+    SSL_PORT = 443;
 }
 
 module.exports = {
