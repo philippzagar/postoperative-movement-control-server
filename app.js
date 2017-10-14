@@ -307,13 +307,14 @@ app.get('/', (req, res) => {
 http.createServer((req, res) => {
     res.writeHead(301, {"Location": "https://" + req.headers['host'] + req.url});
     res.end();
+    log.Console(`Automatic Redirection from Port ${C.PORT} to HTTPS ${C.SSL_PORT}!`)
 }).listen(C.PORT);
 
 // HTTPS Server binding
 https.createServer({
-    key: fs.readFileSync('./certs/privkey.pem'),
-    cert: fs.readFileSync('./certs/fullchain.pem'),
-    ca: fs.readFileSync('./certs/chain.pem')
+    key: C.SSL_CERT.key,
+    cert: C.SSL_CERT.cert,
+    ca: C.SSL_CERT.ca
 }, app).listen(C.SSL_PORT, () => {
     log.Console(`SSL Server started on Port ${C.SSL_PORT}!`);
 });

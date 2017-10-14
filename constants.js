@@ -1,5 +1,15 @@
-//Use HTL PC DB or RPI DB
+// Require npm package
+const fs = require('fs');
+
+// Use HTL PC DB or RPI DB
 const USING_HTL_DB = false;
+
+// SSL Certificates
+let SSL_CERT = {
+    key: fs.readFileSync('./certs/privkey.pem'),
+    cert: fs.readFileSync('./certs/fullchain.pem'),
+    ca: fs.readFileSync('./certs/chain.pem')
+};
 
 let DB_USER = "";
 let DB_PW = "";
@@ -27,6 +37,7 @@ if(USING_HTL_DB) {
 
 module.exports = {
     USING_HTL_DB,
+    SSL_CERT,
     DB_USER,
     DB_PW,
     DB_AuthMechanism,
