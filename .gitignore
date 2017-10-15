@@ -6,3 +6,5 @@
 playground/desktop.ini
 /db/models/desktop.ini
 /db/tests/desktop.ini
+node_modules/
+/middleware/desktop.ini

@@ -25,7 +25,11 @@ const   {MongoClient, ObjectID} = require('mongodb'),
 
 // Mongoose Modules
 const   {Member} = require('./db/models/Member'),
-        {GyroValues} = require('./db/models/GyroValues');
+        {GyroValues} = require('./db/models/GyroValues'),
+        {User} = require('./db/models/User');
+
+// Middleware
+const   {authenticate} = require('./middleware/authenticate');
 
 let app = express();
 
@@ -34,6 +38,8 @@ app.use(bodyParser.json({limit: '50mb'}));
 // Set Favicon
 app.use(favicon(__dirname + '/images/favicon.ico'));
 
+
+// Express Routes
 app.get('/', (req, res) => {
     res.send("Hello World!");
 });
@@ -291,6 +297,29 @@ app.patch('/gyroValue/:id', (req, res) => {
         res.status(400).send({err: "Invalid values!"});
     }
 });
+
+app.post('/users', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']);
+    let user = new User(body);
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    })
+});
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
+});
+
+/*
+// Set 404 path if route is not found
+app.get('*', (req, res) => {
+    res.status(404).send('Not valid route!');
+});*/
 
 // Automatic redirecting to SSL
 http.createServer((req, res) => {
