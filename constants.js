@@ -5,19 +5,21 @@ const fs = require('fs');
 const USING_HTL_DB = false;
 
 // SSL Certificates
-let SSL_CERT = {
+const SSL_CERT = {
     key: fs.readFileSync('./certs/privkey.pem'),
     cert: fs.readFileSync('./certs/fullchain.pem'),
     ca: fs.readFileSync('./certs/chain.pem')
 };
 
-let DB_USER = "";
-let DB_PW = "";
-let DB_AuthMechanism = "";
-let DB_AuthSource = "";
+const JWT_SECRET = "dipl2017";
 
-let PORT = 0;
-let SSL_PORT = 0;
+let DB_USER = "",
+    DB_PW = "",
+    DB_AuthMechanism = "",
+    DB_AuthSource = "";
+
+let PORT = 0,
+    SSL_PORT = 0;
 
 if(USING_HTL_DB) {
     DB_USER = "MyUser";
@@ -43,5 +45,6 @@ module.exports = {
     DB_AuthMechanism,
     DB_AuthSource,
     PORT,
-    SSL_PORT
+    SSL_PORT,
+    JWT_SECRET
 };

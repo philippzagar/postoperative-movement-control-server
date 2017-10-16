@@ -8,3 +8,4 @@ playground/desktop.ini
 /db/tests/desktop.ini
 node_modules/
 /middleware/desktop.ini
+/db/tests/seed/desktop.ini
