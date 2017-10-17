@@ -6,8 +6,7 @@ const   express = require('express'),
 
 // System Packages
 const   http = require('http'),
-        https = require('https'),
-        fs = require('fs');
+        https = require('https');
 
 // Constants
 const   C = require('./constants');
@@ -20,12 +19,11 @@ global.log = log;
 const   date = require('./modules/date');
 
 // MongoDB Modules
-const   {MongoClient, ObjectID} = require('mongodb'),
-        {mongoose} = require('./db/mongoose');
+const   {MongoClient, ObjectID} = require('mongodb');
+//const {mongoose} = require('./db/mongoose');
 
 // Global Variable that hold the connection
 let db = null;
-
 // Create the database connection
 MongoClient.connect(C.URL, {
         poolSize: 10
@@ -43,8 +41,8 @@ MongoClient.connect(C.URL, {
 
 // Mongoose Modules
 const   {Member} = require('./db/models/Member'),
-        {GyroValues} = require('./db/models/GyroValues'),
         {User} = require('./db/models/User');
+//const {GyroValues} = require('./db/models/GyroValues');
 
 // Middleware
 const   {authenticate} = require('./middleware/authenticate');
