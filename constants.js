@@ -17,6 +17,7 @@ let DB_USER = "",
     DB_PW = "",
     DB_AuthMechanism = "",
     DB_AuthSource = "";
+    URL = "";
 
 let PORT = 0,
     SSL_PORT = 0;
@@ -28,6 +29,7 @@ if(USING_HTL_DB) {
     DB_AuthSource = "MyApp";
     PORT = 80;
     SSL_PORT = 443;
+    URL = `mongodb://${DB_USER}:${DB_PW}@localhost:27017/MyApp?authMechanism=${DB_AuthMechanism}`;
 } else {
     DB_USER = "MyAppUser";
     DB_PW = "12345";
@@ -35,6 +37,7 @@ if(USING_HTL_DB) {
     DB_AuthSource = "MyApp";
     PORT = 80;
     SSL_PORT = 443;
+    URL = `mongodb://${DB_USER}:${DB_PW}@localhost:27017/MyApp?authMechanism=${DB_AuthMechanism}`;
 }
 
 module.exports = {
@@ -44,6 +47,7 @@ module.exports = {
     DB_PW,
     DB_AuthMechanism,
     DB_AuthSource,
+    URL,
     PORT,
     SSL_PORT,
     JWT_SECRET

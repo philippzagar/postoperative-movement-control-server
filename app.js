@@ -23,6 +23,24 @@ const   date = require('./modules/date');
 const   {MongoClient, ObjectID} = require('mongodb'),
         {mongoose} = require('./db/mongoose');
 
+// Global Variable that hold the connection
+let db = null;
+
+// Create the database connection
+MongoClient.connect(C.URL, {
+        poolSize: 10
+        // other options can go here
+    }, (err, database) => {
+        if(err) {
+            log.Console("Error while connecting to DB!");
+            log.ConsoleJSON(err);
+            return;
+        }
+
+        log.Console("Successfully connected to DB!");
+        db = database;
+    });
+
 // Mongoose Modules
 const   {Member} = require('./db/models/Member'),
         {GyroValues} = require('./db/models/GyroValues'),
@@ -137,9 +155,11 @@ app.patch('/members/:id', (req, res) => {
     })
 });
 
-app.post('/gyroValue', (req, res) => {
-    log.ConsoleJSON(req.body);
+app.post('/gyroValue', authenticate, (req, res) => {
+    let gyroValue = req.body;
 
+    // Methode 1 - with Mongoose
+    /*
     let gyroValue = new GyroValues(req.body);
 
     gyroValue.save().then((value) => {
@@ -149,16 +169,23 @@ app.post('/gyroValue', (req, res) => {
     }).catch((err) => {
         res.status(400).send(err);
     });
+    */
+
+    let user_id = req.user._id;
+    let dbName = "gyroValues-" + user_id;
+
+    db.collection(dbName).insertOne(gyroValue).then((docs) => {
+        res.send(docs.ops);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
 });
 
-app.post('/gyroValues', (req, res) => {
-    // Print out the JSON Array
-    //log.ConsoleJSON(req.body);
-
+app.post('/gyroValues', authenticate, (req, res) => {
     let gyroValues = req.body;
 
     //Method 1 - Insert with function insertMany() from Mongoose
-
+    /*
     log.Console(date.getMilliTime());
 
     GyroValues.insertMany(gyroValues).then((values) => {
@@ -170,52 +197,23 @@ app.post('/gyroValues', (req, res) => {
     }).catch((err) => {
         return res.status(400).send(err);
     });
-
-    /* Method 2 - Insert with native MongoDB Library
-    const {MongoClient} = require('mongodb');
-
-    let user = "";
-    let pw = "";
-
-    if(htl_db) {
-        user = "MyUser";
-        pw = "User123";
-        log.Console("HTL PC DB is being used");
-    } else {
-        user = "MyAppUser";
-        pw = "12345";
-        log.Console("RPi DB is being used");
-    }
-
-    const authMechanism = "SCRAM-SHA-1";
-    const authSource = "MyApp";
-
-    // Connection URL
-    const url = `mongodb://${user}:${pw}@localhost:27017/MyApp?authMechanism=${authMechanism}`;
-    // Use connect method to connect to the Server
-    MongoClient.connect(url, function(err, db) {
+    */
+     //Method 2 - Insert with native MongoDB Library
+    /*
+    log.Console(date.getMilliTime());
+    db.collection("gyroTest").insertMany(gyroValues, (err, result) => {
         if (err) {
-            log.Console("Connection to DB failed!");
-            return;
+            log.Console(err);
+            return log.Console("Couldn't insert the Object!");
         }
 
-        log.Console("Connected correctly to server");
-
         log.Console(date.getMilliTime());
-        db.collection("gyroTest").insertMany(gyroValues, (err, result) => {
-            if (err) {
-                log.Console(err);
-                return log.Console("Couldn't insert the Object!");
-            }
-
-            log.Console(date.getMilliTime());
-            res.send(result);
-            db.close();
-        });
+        res.send(result);
+        db.close();
     });
+    */
+    //Method 3 - Inserting with .save() from Mongoose with for loop
     /*
-
-    /* Method 3 - Inserting with .save() from Mongoose with for loop
     let i = 0;
 
     for(i; i < gyroValues.length; i++) {
@@ -230,22 +228,49 @@ app.post('/gyroValues', (req, res) => {
 
     res.status(200).send({result: `Inserted ${i} Values to DB!`, values:gyroValues});
     */
+
+    let user_id = req.user._id;
+    let dbName = "gyroValues-" + user_id;
+
+    log.Console(date.getMilliTime());
+    db.collection(dbName).insertMany(gyroValues).then((docs) => {
+        log.Console(date.getMilliTime());
+        res.send(`Inserted ${docs.ops.length} to the DB!`);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
 });
 
-app.get('/gyroValues', (req, res) => {
+app.get('/gyroValues', authenticate,(req, res) => {
+    // Methode 1 - with Mongoose
+    /*
     GyroValues.find().then((gyroValues) => {
         res.send({gyroValues});
     }, (err) => {
         res.status(400).send(err);
     })
+    */
+
+    let user_id = req.user._id;
+    let dbName = "gyroValues-" + user_id;
+
+    db.collection(dbName).find({}).toArray().then((docs) => {
+        res.send({
+            n: docs.length,
+            values: docs
+        });
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
 });
 
-app.get('/gyroValue/:id', (req, res) => {
+app.get('/gyroValue/:id', authenticate, (req, res) => {
     let id = req.params.id;
     if(!ObjectID.isValid(id)) {
         return res.status(404).send();
     }
-
+    // Methode 1 - with Mongoose
+    /*
     GyroValues.findById(id).then((gyroValue) => {
         if (!gyroValue) {
             return res.status(404).send();
@@ -254,14 +279,32 @@ app.get('/gyroValue/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send();
     })
+    */
+
+    let user_id = req.user._id;
+    let dbName = "gyroValues-" + user_id;
+
+    db.collection(dbName).findOne({_id: new ObjectID(id)}).then((doc) => {
+        if(!doc) {
+            res.status(404).send();
+        }
+        res.send({value: doc});
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
 });
 
-app.delete('/gyroValue/:id', (req, res) => {
+app.delete('/gyroValue/:id', authenticate, (req, res) => {
     let id = req.params.id;
+    let user_id = req.user._id;
+    let dbName = "gyroValues-" + user_id;
+
     if(!ObjectID.isValid(id)) {
         return res.status(404).send();
     }
 
+    // Methode 1 - with Mongoose
+    /*
     GyroValues.findByIdAndRemove(id).then((gyroValue) => {
         if(!gyroValue) {
             return res.status(404).send();
@@ -271,18 +314,32 @@ app.delete('/gyroValue/:id', (req, res) => {
     }).catch((err) => {
         res.status(400).send();
     })
+    */
+
+    db.collection(dbName).findOneAndDelete({_id: new ObjectID(id)}).then((doc) => {
+        if(!doc.value) {
+            res.status(404).send();
+        }
+        res.send(doc);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
 });
 
-app.patch('/gyroValue/:id', (req, res) => {
+app.patch('/gyroValue/:id', authenticate, (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['values']);
+
+    let user_id = req.user._id;
+    let dbName = "gyroValues-" + user_id;
 
     if(!ObjectID.isValid(id)) {
         return res.status(404).send();
     }
 
     log.ConsoleJSON(body);
-
+    // Methode 1 - with Mongoose
+    /*
     if(_.isNumber(body.values.pitch) && _.isNumber(body.values.roll) && _.isNumber(body.values.yaw) && body) {
         GyroValues.findByIdAndUpdate(id, {$set: body}, {new: true}).then((gyroValue) => {
             if(!gyroValue) {
@@ -295,6 +352,19 @@ app.patch('/gyroValue/:id', (req, res) => {
         })
     } else {
         res.status(400).send({err: "Invalid values!"});
+    }
+    */
+    if(_.isNumber(body.values.pitch) && _.isNumber(body.values.roll) && _.isNumber(body.values.yaw) && body) {
+        db.collection(dbName).findOneAndUpdate({_id: new ObjectID(id)}, {$set: body}).then((doc) => {
+            if (!doc) {
+                res.status(404).send();
+            }
+            res.send(doc);
+        }).catch((e) => {
+            res.status(400).send(e);
+        });
+    } else {
+        res.status(400).send("Invalid Values!");
     }
 });
 

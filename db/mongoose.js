@@ -8,13 +8,15 @@ if(C.USING_HTL_DB) {
     log.Console("Using Raspberry Pi DB!")
 }
 
+const url = `mongodb://${C.DB_USER}:${C.DB_PW}@localhost:27017/${C.DB_AuthSource}?authMechanism=${C.DB_AuthMechanism}`;
+
 mongoose.Promise = global.Promise;
-mongoose.connect(`mongodb://${C.DB_USER}:${C.DB_PW}@localhost:27017/${C.DB_AuthSource}?authMechanism=${C.DB_AuthMechanism}`, {
+mongoose.connect(url, {
         useMongoClient: true,
     }).then(() => {
-        log.Console("Successfully connected to DB!")
+        log.Console("Successfully connected to DB with Mongoose!")
     }, (err) => {
-        log.Console("Error while connecting to DB!");
+        log.Console("Error while connecting to DB with Mongoose!");
         log.ConsoleJSON(err);
     });
 
