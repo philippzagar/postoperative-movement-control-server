@@ -19,8 +19,8 @@ global.log = log;
 const   date = require('./modules/date');
 
 // MongoDB Modules
-const   {MongoClient, ObjectID} = require('mongodb');
-//const {mongoose} = require('./db/mongoose');
+const   {MongoClient, ObjectID} = require('mongodb'),
+        {mongoose} = require('./db/mongoose');
 
 // Global Variable that hold the connection
 let db = null;
@@ -45,7 +45,8 @@ const   {Member} = require('./db/models/Member'),
 //const {GyroValues} = require('./db/models/GyroValues');
 
 // Middleware
-const   {authenticate} = require('./middleware/authenticate');
+const   {authenticate} = require('./middleware/authenticate'),
+        {logMiddleware} = require('./middleware/log');
 
 let app = express();
 
@@ -53,7 +54,8 @@ let app = express();
 app.use(bodyParser.json({limit: '50mb'}));
 // Set Favicon
 app.use(favicon(__dirname + '/images/favicon.ico'));
-
+// Set Logging Middleware
+app.use(logMiddleware);
 
 // Express Routes
 app.get('/', (req, res) => {
@@ -284,7 +286,7 @@ app.get('/gyroValue/:id', authenticate, (req, res) => {
 
     db.collection(dbName).findOne({_id: new ObjectID(id)}).then((doc) => {
         if(!doc) {
-            res.status(404).send();
+            return res.status(404).send();
         }
         res.send({value: doc});
     }).catch((e) => {
@@ -316,7 +318,7 @@ app.delete('/gyroValue/:id', authenticate, (req, res) => {
 
     db.collection(dbName).findOneAndDelete({_id: new ObjectID(id)}).then((doc) => {
         if(!doc.value) {
-            res.status(404).send();
+            return res.status(404).send();
         }
         res.send(doc);
     }).catch((e) => {
@@ -335,7 +337,6 @@ app.patch('/gyroValue/:id', authenticate, (req, res) => {
         return res.status(404).send();
     }
 
-    log.ConsoleJSON(body);
     // Methode 1 - with Mongoose
     /*
     if(_.isNumber(body.values.pitch) && _.isNumber(body.values.roll) && _.isNumber(body.values.yaw) && body) {
@@ -355,7 +356,7 @@ app.patch('/gyroValue/:id', authenticate, (req, res) => {
     if(_.isNumber(body.values.pitch) && _.isNumber(body.values.roll) && _.isNumber(body.values.yaw) && body) {
         db.collection(dbName).findOneAndUpdate({_id: new ObjectID(id)}, {$set: body}).then((doc) => {
             if (!doc) {
-                res.status(404).send();
+                return res.status(404).send();
             }
             res.send(doc);
         }).catch((e) => {
