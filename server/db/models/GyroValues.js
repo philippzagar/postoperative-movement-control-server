@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const date = require('./../../modules/date');
+const date = require('../../modules/date');
 
 let GyroValues = mongoose.model('GyroValues', {
     properties: {

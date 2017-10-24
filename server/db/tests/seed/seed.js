@@ -1,10 +1,10 @@
 const {ObjectID} = require('mongodb');
 const jwt = require('jsonwebtoken');
 
-const C = require('./../../../constants');
+const C = require('../../../constants');
 
-const {Member} = require('./../../models/Member');
-const {User} = require('./../../models/User');
+const {Member} = require('../../models/Member');
+const {User} = require('../../models/User');
 
 const userOneId = new ObjectID();
 const users = [{

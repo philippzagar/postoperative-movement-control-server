@@ -1,4 +1,4 @@
-let {User} = require('./../db/models/User');
+let {User} = require('../db/models/User');
 
 let authenticate = (req, res, next) => {
     let token = req.header('x-auth');

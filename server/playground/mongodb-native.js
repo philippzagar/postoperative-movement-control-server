@@ -1,4 +1,4 @@
-const {MongoClient, ObjectID} = require('mongodb');
+const {MongoClient, ObjectID} = require('server/playground/mongodb');
 
 const user = "MyAppUser";
 const pw = "12345";

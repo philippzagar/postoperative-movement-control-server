@@ -1,4 +1,4 @@
-const C = require('./../constants');
+const C = require('../constants');
 let mongoose = require('mongoose');
 const log = global.log;
 

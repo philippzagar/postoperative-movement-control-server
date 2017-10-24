@@ -3,7 +3,7 @@ const   mongoose = require('mongoose'),
         jwt = require('jsonwebtoken'),
         _ = require('lodash'),
         bcrypt = require('bcryptjs'),
-        C = require('./../../constants');
+        C = require('../../constants');
 
 let UserSchema = new mongoose.Schema({
     email: {
