@@ -39,7 +39,16 @@ MongoClient.connect(C.URL, {
         db = database;
     });
 
-// Mongoose Modules
+let app = express();
+
+let server = https.createServer({
+    key: C.SSL_CERT.key,
+    cert: C.SSL_CERT.cert,
+    ca: C.SSL_CERT.ca
+}, app);
+let io = require('socket.io')(server);
+
+// Mongoose Models
 const   {Member} = require('./db/models/Member'),
         {User} = require('./db/models/User');
 //const {GyroValues} = require('./db/models/GyroValues');
@@ -48,7 +57,6 @@ const   {Member} = require('./db/models/Member'),
 const   {authenticate} = require('./middleware/authenticate'),
         {logMiddleware} = require('./middleware/log');
 
-let app = express();
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
@@ -418,11 +426,7 @@ http.createServer((req, res) => {
 }).listen(C.PORT);
 
 // HTTPS Server binding
-https.createServer({
-    key: C.SSL_CERT.key,
-    cert: C.SSL_CERT.cert,
-    ca: C.SSL_CERT.ca
-}, app).listen(C.SSL_PORT, () => {
+server.listen(C.SSL_PORT, () => {
     log.Console(`SSL Server started on Port ${C.SSL_PORT}!`);
 });
 
