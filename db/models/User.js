@@ -45,7 +45,7 @@ UserSchema.methods.toJSON = function () {
 UserSchema.methods.generateAuthToken = function () {
     let user = this;
     let access = 'auth';
-    let token = jwt.sign({_id: user._id.toHexString(), access}, C.JWT_SECRET).toString();
+    let token = jwt.sign({_id: user._id.toHexString(), access}, C.JWT_SECRET, { expiresIn: "15m" }).toString();
 
     user.tokens.push({access, token});
 
@@ -71,7 +71,12 @@ UserSchema.statics.findByToken = function (token) {
     try {
         decoded = jwt.verify(token, C.JWT_SECRET);
     } catch (e) {
-        return Promise.reject();
+        if(e.name === "TokenExpiredError") {
+            log.Console(`Token ${token} expired at ${e.expiredAt}`);
+            return Promise.reject(new Error("TokenExpired"));
+        }
+
+        return Promise.reject(new Error("VerificationError"));
     }
 
     return User.findOne({

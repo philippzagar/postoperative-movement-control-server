@@ -1,6 +1,6 @@
 const fs = require('fs');
 const date = require('./date');
-const {Logs} = require('./../db/models/Logs')
+const {Logs} = require('./../db/models/Logs');
 
 class Log {
     constructor(logArgument) {
@@ -40,6 +40,12 @@ class Log {
                 console.log(`${date.getDateTime()}   ${err}`);
             });
         }
+    }
+
+    All(data) {
+        this.Console(data);
+        this.File(data);
+        this.DB(data);
     }
 }
 

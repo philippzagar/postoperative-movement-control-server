@@ -12,17 +12,13 @@ let logMiddleware = (req, res, next) => {
 
         let content = req.method + " " + req.originalUrl + " " + "User: " + user.email;
 
-        log.Console(content);
-        log.File(content);
-        log.DB(content);
+        log.All(content);
 
         next();
     }).catch(() => {
         let content = req.method + " " + req.originalUrl + " " + "Invalid Token! " + token;
 
-        log.Console(content);
-        log.File(content);
-        log.DB(content);
+        log.All(content);
 
         next();
     });
