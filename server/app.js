@@ -2,7 +2,8 @@
 const   express = require('express'),
         bodyParser = require('body-parser'),
         _ = require('lodash'),
-        favicon = require('serve-favicon');
+        favicon = require('serve-favicon'),
+        path = require('path');
 
 // System Packages
 const   http = require('http'),
@@ -57,6 +58,8 @@ const   {Member} = require('./db/models/Member'),
 const   {authenticate} = require('./middleware/authenticate'),
         {logMiddleware} = require('./middleware/log');
 
+// Path to public directory
+const publicPath = path.join(__dirname, '../public');
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
@@ -64,12 +67,10 @@ app.use(bodyParser.json({limit: '50mb'}));
 app.use(favicon(__dirname + '/images/favicon.ico'));
 // Set Logging Middleware
 app.use(logMiddleware);
+// Static routes
+app.use(express.static(publicPath));
 
 // Express Routes
-app.get('/', (req, res) => {
-    res.send("Hello World!");
-});
-
 app.post('/members', (req, res) => {
    log.ConsoleJSON(req.body);
 
