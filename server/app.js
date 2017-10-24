@@ -3,7 +3,8 @@ const   express = require('express'),
         bodyParser = require('body-parser'),
         _ = require('lodash'),
         favicon = require('serve-favicon'),
-        path = require('path');
+        path = require('path'),
+        moment = require('moment');
 
 // System Packages
 const   http = require('http'),
@@ -40,14 +41,14 @@ MongoClient.connect(C.URL, {
         db = database;
     });
 
-let app = express();
+const app = express();
 
-let server = https.createServer({
+const server = https.createServer({
     key: C.SSL_CERT.key,
     cert: C.SSL_CERT.cert,
     ca: C.SSL_CERT.ca
 }, app);
-let io = require('socket.io')(server);
+const io = require('socket.io')(server);
 
 // Mongoose Models
 const   {Member} = require('./db/models/Member'),
@@ -418,6 +419,16 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 app.get('*', (req, res) => {
     res.status(404).send('Not valid route!');
 });*/
+
+// Socket.io events
+io.on('connection', (socket) => {
+    log.Console("New connection!");
+
+    socket.emit('news', { hello: 'world' });
+    socket.on('my other event', (data) => {
+        console.log(data);
+    });
+});
 
 // Automatic redirecting to SSL
 http.createServer((req, res) => {
