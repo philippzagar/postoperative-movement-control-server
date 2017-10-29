@@ -53,14 +53,14 @@ const io = require('socket.io')(server);
 // Mongoose Models
 const   {Member} = require('./db/models/Member'),
         {User} = require('./db/models/User');
-//const {GyroValues} = require('./db/models/GyroValues');
+// const {GyroValues} = require('./db/models/GyroValues');
 
 // Middleware
 const   {authenticate} = require('./middleware/authenticate'),
         {logMiddleware} = require('./middleware/log');
 
 // Path to public directory
-const publicPath = path.join(__dirname, '../public');
+const publicPath = path.join(__dirname, '../public/public');
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
