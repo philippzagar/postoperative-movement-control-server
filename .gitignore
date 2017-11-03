@@ -9,12 +9,4 @@ server/playground/desktop.ini
 node_modules/
 /server/middleware/desktop.ini
 /server/db/tests/seed/desktop.ini
-/public/desktop.ini
-/public/src/desktop.ini
-/public/src/app.js
-/public/.idea/
-/public/public/desktop.ini
-/public/src/playground/desktop.ini
-/public/src/playground/js/desktop.ini
-/public/public/scripts/desktop.ini
 /server/desktop.ini

@@ -60,7 +60,7 @@ const   {authenticate} = require('./middleware/authenticate'),
         {logMiddleware} = require('./middleware/log');
 
 // Path to public directory
-const publicPath = path.join(__dirname, '../public/public');
+const publicPath = path.join(__dirname, '../client/public');
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
