@@ -3,10 +3,9 @@
 /desktop.ini
 /.idea/
 /server/db/desktop.ini
-server/playground/desktop.ini
+/server/playground/desktop.ini
 /server/db/models/desktop.ini
 /server/db/tests/desktop.ini
-node_modules/
 /server/middleware/desktop.ini
 /server/db/tests/seed/desktop.ini
 /server/desktop.ini

@@ -24,6 +24,9 @@ const   date = require('./modules/date');
 const   {MongoClient, ObjectID} = require('mongodb'),
         {mongoose} = require('./db/mongoose');
 
+// CORS Middleware
+const   cors = require('cors');
+
 // Global Variable that hold the connection
 let db = null;
 // Create the database connection
@@ -70,6 +73,8 @@ app.use(favicon(__dirname + '/images/favicon.ico'));
 app.use(logMiddleware);
 // Static routes
 app.use(express.static(publicPath));
+// CORS - expose Header
+app.use(cors({'exposedHeaders': ['x-auth']}));
 
 // Express Routes
 app.post('/members', (req, res) => {
@@ -304,6 +309,38 @@ app.get('/gyroValue/:id', authenticate, (req, res) => {
     });
 });
 
+app.get('/findGyroLastValues/:count', authenticate, (req, res) => {
+    const count = parseInt(req.params.count);
+
+    if(!(count > 0)) {
+        return res.status(404).send();
+    }
+
+    // Methode 1 - with Mongoose
+    /*
+    GyroValues.findById(id).then((gyroValue) => {
+        if (!gyroValue) {
+            return res.status(404).send();
+        }
+        res.send({gyroValue});
+    }).catch((e) => {
+        res.status(400).send();
+    })
+    */
+
+    let user_id = req.user._id;
+    let dbName = "gyroValues-" + user_id;
+    db.collection(dbName).find().sort({ $natural: -1 }).limit(count).toArray().then((docs) => {
+        docs = docs.reverse();
+        res.send({
+            n: docs.length,
+            values: docs
+        });
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+});
+
 app.delete('/gyroValue/:id', authenticate, (req, res) => {
     let id = req.params.id;
     let user_id = req.user._id;
@@ -378,7 +415,7 @@ app.patch('/gyroValue/:id', authenticate, (req, res) => {
 });
 
 app.post('/users', (req, res) => {
-    let body = _.pick(req.body, ['email', 'password']);
+    let body = _.pick(req.body, ['email', 'password', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year']);
     let user = new User(body);
 
     user.save().then(() => {
@@ -386,7 +423,10 @@ app.post('/users', (req, res) => {
     }).then((token) => {
         res.header('x-auth', token).send(user);
     }).catch((e) => {
-        res.status(400).send(e);
+        res.status(400).send({
+            message: "Failed to create user!",
+            error: e
+        });
     })
 });
 
@@ -402,7 +442,9 @@ app.post('/users/login', (req, res) => {
             res.header('x-auth', token).send(user);
         });
     }).catch((e) => {
-        res.status(400).send();
+        res.status(401).send({
+            message: "Failed to log in!"
+        });
     });
 });
 
@@ -414,13 +456,13 @@ app.delete('/users/me/token', authenticate, (req, res) => {
     });
 });
 
-/*
 // Set 404 path if route is not found
+/*
 app.get('*', (req, res) => {
     res.status(404).send('Not valid route!');
 });*/
-
 // Socket.io events
+/*
 io.on('connection', (socket) => {
     log.Console("New connection!");
 
@@ -429,6 +471,7 @@ io.on('connection', (socket) => {
         console.log(data);
     });
 });
+*/
 
 // Automatic redirecting to SSL
 http.createServer((req, res) => {
@@ -436,7 +479,6 @@ http.createServer((req, res) => {
     res.end();
     log.Console(`Automatic Redirection from Port ${C.PORT} to HTTPS ${C.SSL_PORT}!`)
 }).listen(C.PORT);
-
 // HTTPS Server binding
 server.listen(C.SSL_PORT, () => {
     log.Console(`SSL Server started on Port ${C.SSL_PORT}!`);
