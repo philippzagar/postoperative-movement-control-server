@@ -9,3 +9,5 @@
 /server/middleware/desktop.ini
 /server/db/tests/seed/desktop.ini
 /server/desktop.ini
+/server/templates/mail/desktop.ini
+/server/templates/desktop.ini

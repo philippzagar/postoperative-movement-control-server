@@ -40,6 +40,8 @@ if(USING_HTL_DB) {
     URL = `mongodb://${DB_USER}:${DB_PW}@localhost:27017/MyApp?authMechanism=${DB_AuthMechanism}`;
 }
 
+const SENDGRID_API_KEY = "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";
+
 module.exports = {
     USING_HTL_DB,
     SSL_CERT,
@@ -50,5 +52,6 @@ module.exports = {
     URL,
     PORT,
     SSL_PORT,
-    JWT_SECRET
+    JWT_SECRET,
+    SENDGRID_API_KEY
 };

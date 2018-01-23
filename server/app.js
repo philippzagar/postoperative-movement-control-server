@@ -18,7 +18,8 @@ const   log = require('./cmdarguments');
 global.log = log;
 
 // Self Written Modules
-const   date = require('./modules/date');
+const   date = require('./modules/date'),
+        mailTemplate = require('./templates/mail/mailTemplate');
 
 // MongoDB Modules
 const   {MongoClient, ObjectID} = require('mongodb'),
@@ -64,6 +65,9 @@ const   {authenticate} = require('./middleware/authenticate'),
 
 // Path to public directory
 const publicPath = path.join(__dirname, '../client/public');
+
+// Sendgrid
+const sg = require('@sendgrid/mail');
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
@@ -454,6 +458,61 @@ app.delete('/users/me/token', authenticate, (req, res) => {
     }, () => {
         res.status(400).send();
     });
+});
+
+app.post('/users/resetpassword', (req, res) => {
+    let body = _.pick(req.body, ['email']);
+    let helpUser;
+
+    User.findByMail(body.email).then((user) => {
+        helpUser = user;
+        return user;
+    }).then((user) => {
+        return user.insertChangePasswordToken();
+    }).then((data) => {
+        return mailTemplate.fetchMailTemplate({
+            key: data.key,
+            firstName: helpUser.firstName,
+            lastName: helpUser.lastName
+        });
+    }).catch((e) => {
+        log.Console({
+            message: "Error while reading template!",
+            error: e
+        });
+    }).then((template) => {
+        sg.setApiKey(C.SENDGRID_API_KEY);
+
+        const msg = {
+            to: helpUser.email,
+            from: 'Bewegungskontrolle@zagar.spdns.org',
+            subject: 'Change password',
+            html: template,
+        };
+
+        sg.send(msg);
+        res.send({
+            message: "Mail sent successfully!"
+        });
+
+    }).catch((e) => {
+        res.status(400).send({
+            message: "This eMail is not registered to a user",
+            error: e
+        });
+    });
+});
+
+app.get('/users/resetpasswordrequest/:key', (req, res) => {
+    const key = req.params.key;
+
+    User.findByChangePasswordToken(key).then((user) => {
+        log.Console("Find");
+        log.Console(user.email);
+        res.send(user.email);
+    }).catch((e) => {
+        log.Console(e);
+    })
 });
 
 // Set 404 path if route is not found

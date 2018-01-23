@@ -35,15 +35,15 @@ let UserSchema = new mongoose.Schema({
     },
     birth_day: {
         type: Number,
-        require: true
+        require: false
     },
     birth_month: {
         type: Number,
-        require: true
+        require: false
     },
     birth_year: {
         type: Number,
-        require: true
+        require: false
     },
     tokens: [{
         access: {
@@ -54,7 +54,12 @@ let UserSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    changePasswordToken: {
+        type: String,
+        require: false,
+        default: ""
+    }
 });
 
 UserSchema.methods.toJSON = function () {
@@ -83,6 +88,41 @@ UserSchema.methods.removeToken = function (token) {
         $pull: {
             tokens: {token}
         }
+    });
+};
+
+UserSchema.methods.insertChangePasswordToken = function () {
+    let user = this;
+
+    return new Promise((resolve, reject) => {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, token) => {
+                user.changePasswordToken = token;
+                user.save().then(() => {
+                    log.All(`Inserted ${token} for user ${user.email}`);
+                    resolve({
+                        key: token
+                    });
+                }).catch((e) => {
+                    log.All(e);
+                    reject(e);
+                });
+            });
+        });
+    });
+};
+
+UserSchema.statics.findByChangePasswordToken = function (changePasswordToken) {
+    let User = this;
+
+    return new Promise((resolve, reject) => {
+        User.findOne({changePasswordToken}).then((user) => {
+            if (!user) {
+                return reject();
+            }
+
+            return resolve(user);
+        });
     });
 };
 
@@ -125,6 +165,20 @@ UserSchema.statics.findByCredentials = function (email, password) {
                     reject();
                 }
             });
+        });
+    });
+};
+
+UserSchema.statics.findByMail = function (email) {
+    let User = this;
+
+    return new Promise((resolve, reject) => {
+        User.findOne({email}).then((user) => {
+            if (!user) {
+                return reject();
+            }
+
+            return resolve(user);
         });
     });
 };
