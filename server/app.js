@@ -255,8 +255,10 @@ app.post('/gyroValues', authenticate, (req, res) => {
     db.collection(dbName).insertMany(gyroValues).then((docs) => {
         log.Console(date.getMilliTime());
         res.send(`Inserted ${docs.ops.length} to the DB!`);
+        log.Console(`Inserted ${docs.ops.length} to the DB!`);
     }).catch((e) => {
         res.status(400).send(e);
+        log.ConsoleJSON(e);
     });
 });
 
@@ -471,7 +473,7 @@ app.post('/users/resetpassword', (req, res) => {
         return user.insertChangePasswordToken();
     }).then((data) => {
         return mailTemplate.fetchMailTemplate({
-            key: data.key,
+            key: data.key.replace(/\//g, '%2F'),    // to replace the slashes in the key because it would mess with the URL
             firstName: helpUser.firstName,
             lastName: helpUser.lastName
         });
@@ -505,11 +507,11 @@ app.post('/users/resetpassword', (req, res) => {
 
 app.get('/users/resetpasswordrequest/:key', (req, res) => {
     const key = req.params.key;
+    log.Console(key);
 
     User.findByChangePasswordToken(key).then((user) => {
-        log.Console("Find");
-        log.Console(user.email);
-        res.send(user.email);
+
+        res.send(user);
     }).catch((e) => {
         log.Console(e);
     })
