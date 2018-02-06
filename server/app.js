@@ -494,11 +494,13 @@ app.post('/users/resetpassword', (req, res) => {
 
         sg.send(msg);
         res.send({
+            status: "OK",
             message: "Mail sent successfully!"
         });
 
     }).catch((e) => {
         res.status(400).send({
+            status: "ERROR",
             message: "This eMail is not registered to a user",
             error: e
         });
@@ -510,11 +512,51 @@ app.get('/users/resetpasswordrequest/:key', (req, res) => {
     log.Console(key);
 
     User.findByChangePasswordToken(key).then((user) => {
-
-        res.send(user);
+        log.All(`Valid key ${key} for user ${user.email}`);
+        res.send({
+            user: {
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName
+            },
+            status: "OK"});
     }).catch((e) => {
-        log.Console(e);
+        log.All(`Invalid key ${key}`);
+        res.send({status: "ERROR"});
     })
+});
+
+app.post('/users/changepassword/', (req, res) => {
+    const key = req.body.key.replace(/%2F/g, '\/');
+    const newPassword = req.body.newPassword;
+
+    User.findByChangePasswordToken(key).then((user) => {
+        user.changePassword(newPassword).then((user) => {
+            log.All(`Should have changed password in main to ${newPassword}!`);
+            res.send({
+                status: "OK",
+                user: {
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName
+                }
+            });
+        }).catch((e) => {
+            log.All(e);
+            log.All("Failed changing password in main!");
+            res.send({
+                status: "ERROR",
+                message: "Failed to change password"
+            });
+        });
+    }).catch((e) => {
+        log.All("Not valid key!");
+        log.All(e);
+        res.send({
+            changedPassword: "ERROR",
+            message: "Key is not valid!"
+        });
+    });
 });
 
 // Set 404 path if route is not found

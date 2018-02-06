@@ -72,7 +72,7 @@ UserSchema.methods.toJSON = function () {
 UserSchema.methods.generateAuthToken = function () {
     let user = this;
     let access = 'auth';
-    let token = jwt.sign({_id: user._id.toHexString(), access}, C.JWT_SECRET, { expiresIn: "15m" }).toString();
+    let token = jwt.sign({_id: user._id.toHexString(), access}, C.JWT_SECRET, { expiresIn: "60m" }).toString();
 
     user.tokens.push({access, token});
 
@@ -110,6 +110,23 @@ UserSchema.methods.insertChangePasswordToken = function () {
             });
         });
     });
+};
+
+UserSchema.methods.changePassword = function(newPassword) {
+    let user = this;
+
+    return new Promise((resolve, reject) => {
+        user.password = newPassword;
+        user.save().then((user) => {
+            log.All(user);
+            log.All(`Should have changed the password to ${newPassword}`);
+            resolve(user);
+        }).catch((e) => {
+            log.All("Erro while changing password!");
+            log.All(e);
+            reject(e);
+        })
+    })
 };
 
 UserSchema.statics.findByChangePasswordToken = function (changePasswordToken) {
