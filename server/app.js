@@ -427,9 +427,13 @@ app.post('/users', (req, res) => {
     user.save().then(() => {
         return user.generateAuthToken();
     }).then((token) => {
-        res.header('x-auth', token).send(user);
+        res.header('x-auth', token).send({
+            status: "OK",
+            user
+        });
     }).catch((e) => {
         res.status(400).send({
+            status: "ERROR",
             message: "Failed to create user!",
             error: e
         });
@@ -507,7 +511,7 @@ app.post('/users/resetpassword', (req, res) => {
     });
 });
 
-app.get('/users/resetpasswordrequest/:key', (req, res) => {
+app.get('/users/resetpasswordreq/:key', (req, res) => {
     const key = req.params.key;
     log.Console(key);
 
@@ -559,32 +563,19 @@ app.post('/users/changepassword/', (req, res) => {
     });
 });
 
-// Set 404 path if route is not found
-/*
 app.get('*', (req, res) => {
-    res.status(404).send('Not valid route!');
-});*/
-// Socket.io events
-/*
-io.on('connection', (socket) => {
-    log.Console("New connection!");
-
-    socket.emit('news', { hello: 'world' });
-    socket.on('my other event', (data) => {
-        console.log(data);
-    });
+   res.sendFile(path.join(publicPath, 'index.html'));
 });
-*/
 
 // Automatic redirecting to SSL
 http.createServer((req, res) => {
     res.writeHead(301, {"Location": "https://" + req.headers['host'] + req.url});
     res.end();
-    log.Console(`Automatic Redirection from Port ${C.PORT} to HTTPS ${C.SSL_PORT}!`)
+    log.All(`Automatic Redirection from Port ${C.PORT} to HTTPS ${C.SSL_PORT}!`)
 }).listen(C.PORT);
 // HTTPS Server binding
 server.listen(C.SSL_PORT, () => {
-    log.Console(`SSL Server started on Port ${C.SSL_PORT}!`);
+    log.All(`SSL Server started on Port ${C.SSL_PORT}!`);
 });
 
 module.exports = {app};
