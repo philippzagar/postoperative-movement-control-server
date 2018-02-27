@@ -117,6 +117,7 @@ UserSchema.methods.changePassword = function(newPassword) {
 
     return new Promise((resolve, reject) => {
         user.password = newPassword;
+        user.changePasswordToken = "";
         user.save().then((user) => {
             log.All(user);
             log.All(`Should have changed the password to ${newPassword}`);
