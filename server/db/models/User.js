@@ -59,6 +59,11 @@ let UserSchema = new mongoose.Schema({
         type: String,
         require: false,
         default: ""
+    },
+    firebase: {
+        type: Boolean,
+        require: true,
+        default: false
     }
 });
 
@@ -66,7 +71,7 @@ UserSchema.methods.toJSON = function () {
     let user = this;
     let userObject = user.toObject();
 
-    return _.pick(userObject, ['_id', 'email', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year']);
+    return _.pick(userObject, ['_id', 'email', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year', 'firebase']);
 };
 
 UserSchema.methods.generateAuthToken = function () {

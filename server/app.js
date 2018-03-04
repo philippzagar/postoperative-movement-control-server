@@ -4,7 +4,9 @@ const   express = require('express'),
         _ = require('lodash'),
         favicon = require('serve-favicon'),
         path = require('path'),
-        moment = require('moment');
+        moment = require('moment'),
+        sg = require('@sendgrid/mail'),
+        admin = require('firebase-admin');
 
 // System Packages
 const   http = require('http'),
@@ -66,8 +68,13 @@ const   {authenticate} = require('./middleware/authenticate'),
 // Path to public directory
 const publicPath = path.join(__dirname, '../client/public');
 
-// Sendgrid
-const sg = require('@sendgrid/mail');
+// Initialize Firebase App
+const serviceAccount = require("./diplomarbeit-htlbraunau-firebase-adminsdk-t4usm-532ec3f43e.json");
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://diplomarbeit-htlbraunau.firebaseio.com"
+});
 
 // Parse body to JSON - Limit set to 50MB - otherwise it throws exception
 app.use(bodyParser.json({limit: '50mb'}));
@@ -421,23 +428,67 @@ app.patch('/gyroValue/:id', authenticate, (req, res) => {
 });
 
 app.post('/users', (req, res) => {
-    let body = _.pick(req.body, ['email', 'password', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year']);
-    let user = new User(body);
-
-    user.save().then(() => {
-        return user.generateAuthToken();
-    }).then((token) => {
-        res.header('x-auth', token).send({
-            status: "OK",
-            user
-        });
-    }).catch((e) => {
+    let body = _.pick(req.body, ['email', 'password', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year', 'firebase']);
+    if(body.firebase === true) {
         res.status(400).send({
             status: "ERROR",
-            message: "Failed to create user!",
-            error: e
+            message: "Please use the Firebase Registration Route!"
         });
-    })
+    } else {
+        let user = new User(body);
+
+        user.save().then(() => {
+            return user.generateAuthToken();
+        }).then((token) => {
+            res.header('x-auth', token).send({
+                status: "OK",
+                user
+            });
+        }).catch((e) => {
+            res.status(400).send({
+                status: "ERROR",
+                message: "Failed to create user!",
+                error: e.errmsg
+            });
+        })
+    }
+});
+
+app.post('/usersFirebase', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year', 'firebase', 'firebaseToken']);
+    if(body.firebase === true) {
+        admin.auth().verifyIdToken(body.firebaseToken)
+            .then((decodedToken) => {
+                body.password = decodedToken.uid;
+
+                let user = new User(body);
+                user.save().then(() => {
+                    return user.generateAuthToken();
+                }).then((token) => {
+                    res.header('x-auth', token).send({
+                        status: "OK",
+                        user
+                    });
+                }).catch((e) => {
+                    res.status(200).send({
+                        status: "ERROR",
+                        message: "Failed to create user!",
+                        error: e.errmsg
+                    });
+                })
+            }).catch((e) => {
+            res.status(400).send({
+                status: "ERROR",
+                message: "Error while vertify Firebase ID Token",
+                error: e
+            });
+        });
+    } else {
+        res.status(400).send({
+            status: "ERROR",
+            message: "Please use the normal Authentication Route!"
+        });
+    }
 });
 
 app.get('/users/me', authenticate, (req, res) => {
@@ -445,28 +496,101 @@ app.get('/users/me', authenticate, (req, res) => {
 });
 
 app.post('/users/login', (req, res) => {
-    let body = _.pick(req.body, ['email', 'password']);
+    let body = _.pick(req.body, ['email', 'password', 'firebase']);
 
-    User.findByCredentials(body.email, body.password).then((user) => {
-        return user.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send({
-                status: "OK",
-                user
+    if(body.firebase === undefined) {
+        return res.status(401).send({
+            status: "ERROR",
+            message: "Please send the Firebase Parameter!"
+        });
+    }
+
+    if(body.firebase === false) {
+        User.findByCredentials(body.email, body.password).then((user) => {
+            if(user.firebase === false) {
+                return user.generateAuthToken().then((token) => {
+                    res.header('x-auth', token).send({
+                        status: "OK",
+                        user
+                    });
+                });
+            } else {
+                res.status(401).send({
+                    status: "ERROR",
+                    message: "Please use the Firebase Authentication Route!"
+                });
+            }
+        }).catch((e) => {
+            res.status(401).send({
+                status: "ERROR",
+                message: "Failed to log in!"
             });
         });
-    }).catch((e) => {
+    } else {
         res.status(401).send({
             status: "ERROR",
-            message: "Failed to log in!"
+            message: "Please use the Firebase Authentication Route!"
         });
-    });
+    }
+});
+
+app.post('/users/loginFirebase', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password', 'firebase']);
+
+    if(body.firebase === undefined) {
+        return res.status(401).send({
+            status: "ERROR",
+            message: "Please send the Firebase Parameter!"
+        });
+    }
+
+    if(body.firebase === true) {
+        admin.auth().verifyIdToken(body.password).then((decodedToken) => {
+            User.findByCredentials(body.email, decodedToken.uid).then((user) => {
+                if(user.firebase === true) {
+                    return user.generateAuthToken().then((token) => {
+                        res.header('x-auth', token).send({
+                            status: "OK",
+                            user
+                        });
+                    });
+                } else {
+                    res.status(401).send({
+                        status: "ERROR",
+                        message: "Please use the Normal Authentication Route!"
+                    });
+                }
+            }).catch((e) => {
+                res.status(401).send({
+                    status: "ERROR",
+                    message: "Failed to log in!"
+                });
+            });
+        }).catch((e) => {
+            res.status(401).send({
+                status: "ERROR",
+                message: "Failed to log in!"
+            });
+        });
+    } else {
+        res.status(401).send({
+            status: "ERROR",
+            message: "Please use the Normal Authentication Route!"
+        });
+    }
 });
 
 app.delete('/users/me/token', authenticate, (req, res) => {
     req.user.removeToken(req.token).then(() => {
-        res.status(200).send();
+        res.status(200).send({
+            status: "OK",
+            message: "Token deleted"
+        });
     }, () => {
-        res.status(400).send();
+        res.status(400).send({
+            status: "ERROR",
+            message: "Error while deleting token"
+        });
     });
 });
 
@@ -475,6 +599,9 @@ app.post('/users/resetpassword', (req, res) => {
     let helpUser;
 
     User.findByMail(body.email).then((user) => {
+        if(user.firebase === true) {
+            return Promise.reject(new Error("Firebase"));
+        }
         helpUser = user;
         return user;
     }).then((user) => {
@@ -484,11 +611,6 @@ app.post('/users/resetpassword', (req, res) => {
             key: data.key.replace(/\//g, '%2F'),    // to replace the slashes in the key because it would mess with the URL
             firstName: helpUser.firstName,
             lastName: helpUser.lastName
-        });
-    }).catch((e) => {
-        log.Console({
-            message: "Error while reading template!",
-            error: e
         });
     }).then((template) => {
         sg.setApiKey(C.SENDGRID_API_KEY);
@@ -505,11 +627,14 @@ app.post('/users/resetpassword', (req, res) => {
             status: "OK",
             message: "Mail sent successfully!"
         });
-
     }).catch((e) => {
+        log.All({
+            message: "Error while resetting password",
+            error: e
+        });
         res.status(400).send({
             status: "ERROR",
-            message: "This eMail is not registered to a user",
+            message: "This eMail is not registered to a valid user (maybe you want to change the password with a Firebase Login)",
             error: e
         });
     });
