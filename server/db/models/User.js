@@ -64,6 +64,11 @@ let UserSchema = new mongoose.Schema({
         type: Boolean,
         require: true,
         default: false
+    },
+    access: {
+        type: String,
+        require: true,
+        default: "PATIENT"
     }
 });
 
@@ -71,7 +76,7 @@ UserSchema.methods.toJSON = function () {
     let user = this;
     let userObject = user.toObject();
 
-    return _.pick(userObject, ['_id', 'email', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year', 'firebase']);
+    return _.pick(userObject, ['_id', 'email', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year', 'firebase', 'access']);
 };
 
 UserSchema.methods.generateAuthToken = function () {

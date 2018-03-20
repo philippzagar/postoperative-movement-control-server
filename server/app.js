@@ -58,8 +58,8 @@ const io = require('socket.io')(server);
 
 // Mongoose Models
 const   {Member} = require('./db/models/Member'),
-        {User} = require('./db/models/User');
-// const {GyroValues} = require('./db/models/GyroValues');
+        {User} = require('./db/models/User'),
+        {AccessToken} = require('./db/models/AccessToken');
 
 // Middleware
 const   {authenticate} = require('./middleware/authenticate'),
@@ -201,9 +201,15 @@ app.post('/gyroValue', authenticate, (req, res) => {
     let dbName = "gyroValues-" + user_id;
 
     db.collection(dbName).insertOne(gyroValue).then((docs) => {
-        res.send(docs.ops);
+        res.send({
+            status: "OK",
+            message: docs.ops[0]
+        });
     }).catch((e) => {
-        res.status(400).send(e);
+        res.status(400).send({
+            status: "ERROR",
+            message: e
+        });
     });
 });
 
@@ -261,10 +267,16 @@ app.post('/gyroValues', authenticate, (req, res) => {
     log.Console(date.getMilliTime());
     db.collection(dbName).insertMany(gyroValues).then((docs) => {
         log.Console(date.getMilliTime());
-        res.send(`Inserted ${docs.ops.length} to the DB!`);
+        res.send({
+            status: "OK",
+            message: `Inserted ${docs.ops.length} to the DB!`
+        });
         log.Console(`Inserted ${docs.ops.length} to the DB!`);
     }).catch((e) => {
-        res.status(400).send(e);
+        res.status(400).send({
+            status: "OK",
+            message: e
+        });
         log.ConsoleJSON(e);
     });
 });
@@ -428,30 +440,82 @@ app.patch('/gyroValue/:id', authenticate, (req, res) => {
 });
 
 app.post('/users', (req, res) => {
-    let body = _.pick(req.body, ['email', 'password', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year', 'firebase']);
+    let body = _.pick(req.body, ['email', 'password', 'firstName', 'lastName', 'birth_day', 'birth_month', 'birth_year', 'firebase', 'access']);
     if(body.firebase === true) {
-        res.status(400).send({
+        return res.status(400).send({
             status: "ERROR",
             message: "Please use the Firebase Registration Route!"
         });
     } else {
-        let user = new User(body);
+        const accessToken = req.body.accessToken;
 
-        user.save().then(() => {
-            return user.generateAuthToken();
-        }).then((token) => {
-            res.header('x-auth', token).send({
-                status: "OK",
-                user
+        if(body.access === "DOCTOR" && accessToken) {
+            AccessToken.findByAccessToken(accessToken).then((Token) => {
+                Token.devalueToken(body.email).then(() => {
+                    let user = new User(body);
+
+                    user.save().then(() => {
+                        return user.generateAuthToken();
+                    }).then((token) => {
+                        res.header('x-auth', token).send({
+                            status: "OK",
+                            user
+                        });
+                    }).catch((e) => {
+                        res.status(400).send({
+                            status: "ERROR",
+                            message: "Failed to create user!",
+                            error: e.errmsg
+                        });
+                    })
+                }).catch(() => {
+                    res.status(400).send({
+                        status: "ERROR",
+                        message: "Failed to create user!",
+                    });
+                });
+            }).catch(() => {
+                res.status(400).send({
+                    status: "ERROR",
+                    message: "Access Token is not valid!",
+                });
             });
-        }).catch((e) => {
-            res.status(400).send({
-                status: "ERROR",
-                message: "Failed to create user!",
-                error: e.errmsg
-            });
-        })
+        } else {
+            body.access = "PATIENT";
+            let user = new User(body);
+
+            user.save().then(() => {
+                return user.generateAuthToken();
+            }).then((token) => {
+                res.header('x-auth', token).send({
+                    status: "OK",
+                    user
+                });
+            }).catch((e) => {
+                res.status(400).send({
+                    status: "ERROR",
+                    message: "Failed to create user!",
+                    error: e.errmsg
+                });
+            })
+        }
     }
+});
+
+app.post('/users/checkAccessToken', (req, res) => {
+    const accessToken = req.body.accessToken;
+
+    AccessToken.findByAccessToken(accessToken).then((token) => {
+        res.send({
+            status: "OK",
+            message: token
+        });
+    }).catch((e) => {
+        res.status(400).send({
+            status: "ERROR",
+            message: "Invalid Accesstoken"
+        })
+    });
 });
 
 app.post('/usersFirebase', (req, res) => {
